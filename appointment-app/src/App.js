@@ -53,7 +53,7 @@ class App extends Component {
     const { name, phone, currentTimeSlot } = this.state;
     
     if( name && phone) {
-
+    
       const requestPayload = {
         name: name,
         phone: phone
@@ -77,6 +77,7 @@ handleInputChange = (event) => {
   render() {
     return (
       <div>
+        <h1>Set Car Your Appointment </h1>
         <div className="card-deck">
           {
             this.state.timeSlots.map((timeSlot) => (

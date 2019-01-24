@@ -1,90 +1,140 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import axios from 'axios';
+import { baseURL } from './Constants';
 import './App.css';
 
 class App extends Component {
   state = {
-    currentTimeSlot: {
-      name: '',
-      phone: ''
+    timeSlots: [],
+    currentTimeSlot: null,
+    name: '',
+    phone: ''
+  }
+
+  componentDidMount() {
+    this.getAllTimeSlots();
+  }
+
+  getAllTimeSlots = () => {
+    axios.get(`${baseURL}/timeslots`)
+      .then((response) => {
+        const { currentTimeSlot } = this.state;
+        let timeSlotName = '';
+        let timeSlotPhone = '';
+        
+        if (currentTimeSlot) {
+          const timeSlots = response.data;
+          // Get the updated current time slot by id from the response which is an array of timeslots
+          const updatedCurrentTimeSlot = timeSlots.find((timeSlot) => {
+            return timeSlot.id === currentTimeSlot.id;
+          });
+
+          timeSlotName = updatedCurrentTimeSlot.name;
+          timeSlotPhone = updatedCurrentTimeSlot.phone;
+        }
+        // response.data = the server response 
+        this.setState({timeSlots: response.data, name: timeSlotName, phone: timeSlotPhone})
+      });
+  }
+
+  // Set current time slot when an item is clicked in the array time slots
+  handleTimeSlotClick = (timeSlot) => {
+    this.setState({ currentTimeSlot: timeSlot, name: timeSlot.name, phone: timeSlot.phone });
+  }
+
+  // Set current time slot to null when the modal is dismissed.
+  handDismiss = () => {
+    this.setState({currentTimeSlot: null});
+  }
+
+  // Handles form submit
+  handleSubmit = (event) => {
+    event.preventDefault();
+    const { name, phone, currentTimeSlot } = this.state;
+    
+    if( name && phone) {
+
+      const requestPayload = {
+        name: name,
+        phone: phone
+      }
+      const timeSlotId = currentTimeSlot.id; // gets timeSlot id
+      
+      axios.post(`${baseURL}/timeslot/update/${timeSlotId}`, requestPayload)
+        .then((response) => {
+          this.getAllTimeSlots(); // resets timeSlot array
+        });
     }
   }
 
-  handleSubmit = (event) => {
-    event.preventDefault();
-  }
+// Handles changes in the form input fields (i.e phone and name form inputs)
+handleInputChange = (event) => {
+  const { name, value } = event.target;
+  this.setState({ [name]: value });
+
+}
+
   render() {
     return (
       <div>
         <div className="card-deck">
-  <div className="card" data-toggle="modal" data-target="#slotModal">
-    <div className="card-body">
-      <h5 className="card-title">9 AM</h5>
-    </div>
-  </div>
-  <div className="card" data-toggle="modal" data-target="#slotModal">
-    <div className="card-body">
-      <h5 className="card-title">10 AM</h5>
-    </div>
-  </div>
-  <div className="card" data-toggle="modal" data-target="#slotModal">
-    <div className="card-body">
-      <h5 className="card-title">11 AM</h5>
-    </div>
-  </div><div className="card" data-toggle="modal" data-target="#slotModal">
-    <div className="card-body">
-      <h5 className="card-title">12 PM</h5>
-    </div>
-  </div><div className="card" data-toggle="modal" data-target="#slotModal">
-    <div className="card-body">
-      <h5 className="card-title">1 PM</h5>
-    </div>
-  </div><div className="card" data-toggle="modal" data-target="#slotModal">
-    <div className="card-body">
-      <h5 className="card-title">2 PM</h5>
-    </div>
-  </div><div className="card" data-toggle="modal" data-target="#slotModal">
-    <div className="card-body">
-      <h5 className="card-title">3 PM</h5>
-    </div>
-  </div><div className="card" data-toggle="modal" data-target="#slotModal">
-    <div className="card-body">
-      <h5 className="card-title">4 PM</h5>
-    </div>
-    </div><div className="card" data-toggle="modal" data-target="#slotModal">
-    <div className="card-body">
-      <h5 className="card-title">5 PM</h5>
-    </div>
-  </div>
-  
-</div>
+          {
+            this.state.timeSlots.map((timeSlot) => (
+              <div
+              style={{backgroundColor: timeSlot.name && timeSlot.phone ? 'red' :  'none'}}
+              onClick={() => this.handleTimeSlotClick(timeSlot)}
+              key={timeSlot.id}
+              className="card"
+              data-toggle="modal"
+              data-target="#slotModal">
+                <div className="card-body">
+                  <h5 className="card-title">{timeSlot.time}</h5>
+                </div>
+              </div>
+            ))
+          }
+        </div>
 
 
 
-<div className="modal fade" id="slotModal" tabindex="-1" role="dialog" aria-labelledby="slotModalLabel" aria-hidden="true">
+<div className="modal fade" id="slotModal" tabIndex="-1" role="dialog" aria-labelledby="slotModalLabel" aria-hidden="true">
   <div className="modal-dialog" role="document">
     <div className="modal-content">
       <div className="modal-header">
-        <h5 className="modal-title" id="slotModalLabel">Appointment</h5>
-        <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+        <h5 className="modal-title" id="slotModalLabel">{this.state.currentTimeSlot && `Appointment for ${this.state.currentTimeSlot.time}`}</h5>
+        <button onClick={this.handDismiss} type="button" className="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div className="modal-body">
         <form onSubmit={this.handleSubmit}>
-          <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" class="form-control" id="name" placeholder="Enter name"/>
+          <div className="form-group">
+            <label htmlFor="name">Name</label>
+            <input
+            onChange={this.handleInputChange}
+            value={this.state.name}
+            type="text"
+            name="name"
+            className="form-control"
+            id="name"
+            placeholder="Enter name"/>
           </div>
-          <div class="form-group">
-            <label for="phone">Phone</label>
-            <input type="text" class="form-control" id="phone" placeholder="Enter phone number"/>
+          <div className="form-group">
+            <label htmlFor="phone">Phone</label>
+            <input
+            onChange={this.handleInputChange}
+            value={this.state.phone}
+            type="text"
+            name="phone"
+            className="form-control"
+            id="phone"
+            placeholder="Enter phone number"/>
           </div>
-          <button type="submit" class="btn btn-primary">Save appointment</button>
+          <button type="submit" className="btn btn-primary">Save appointment</button>
         </form>
       </div>
       <div className="modal-footer">
-        <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button onClick={this.handDismiss} type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>

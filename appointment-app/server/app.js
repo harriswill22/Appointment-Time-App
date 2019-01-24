@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const Model = require('./model');
 
 const app = express();
@@ -12,6 +13,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+
+// Allows access from different origins. (i.e different urls or different ports)
+app.use(cors());
 
 app.get('/', (req, res) => {
     return res.status(200).json('Welcome to Appointment App API');

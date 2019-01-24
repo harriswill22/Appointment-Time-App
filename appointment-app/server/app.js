@@ -38,6 +38,7 @@ app.get('/timeslot/:id', (req, res) => {
     return res.status(200).json(timeSlot);
 });
 
+// Requires that ID phone, name have to be entered 
 app.post('/timeslot/update/:id', (req, res) => {
     if (!req.params.id) {
         return res.status(400).json('id param is required');
@@ -49,9 +50,9 @@ app.post('/timeslot/update/:id', (req, res) => {
     const slotId = req.params.id;
     const name = req.body.name;
     const phone = req.body.phone;
-
+    // Calls function to update timeslot
     const timeSlotIsUpdated = model.updateTimeSlot(slotId, name, phone);
-    
+    // If not entered correctly sends back 404 
     if(!timeSlotIsUpdated) {
         return res.status(404).json('Failed! Time slot not updated.')
     }

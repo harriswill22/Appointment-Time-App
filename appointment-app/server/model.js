@@ -73,7 +73,7 @@ class Model {
     updateTimeSlot(slotId, name, phone) {
         // Use to find slot index in timeSlots array
         const slotIndex = this.timeSlots.findIndex((timeSlot) => {
-            return timeSlot.id === parseInt(slotId);
+            return timeSlot.id === parseInt(slotId); // Have to make slot ID into a number 
         });
         // Updates name and phone
         if (slotIndex === -1) {

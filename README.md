@@ -1,1 +1,1 @@
-# Appoitment-Time-App
+# Appointment-Time-App
